@@ -1,0 +1,1 @@
+Collection of scenes, assets, and scripts for UnityEngine that I made for the purposes of either learning more about the engine, testing features, or experimenting with code. Feel free to cut and paste snippets from this repository for your own reference.
