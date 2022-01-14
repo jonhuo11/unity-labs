@@ -5,8 +5,8 @@ public class GameNetworkManager : NetworkManager
 {
     public Itemdex itemdex;
     private Itemdex itemdexInstance;
-    public GameManager gameManager;
-    private GameManager gameManagerInstance;
+    public GameManager1 gameManager;
+    private GameManager1 gameManagerInstance;
 
     public override void OnStartServer()
     {

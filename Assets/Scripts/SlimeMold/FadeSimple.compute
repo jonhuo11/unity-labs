@@ -1,0 +1,42 @@
+#pragma kernel CSInitSim
+#pragma kernel CSMain
+
+struct Agent
+{
+    float2 pos;
+    float2 dir;
+};
+
+Texture2D<float4> Prev;
+RWTexture2D<float4> Result;
+
+float decayRate;
+RWStructuredBuffer<Agent> agents;
+
+float Decay (float4 tile)
+{
+    float o = tile.x;
+    if (o > 0)
+    {
+        o -= decayRate;
+    }
+    if (o < 0)
+    {
+        o = 0;
+    }
+    return float4(o,o,o,1);
+}
+
+[numthreads(8,8,1)]
+void CSInitSim (uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = float4(1,1,1,1);
+}
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    Result[id.xy] = Decay(Prev[id.xy]);
+
+    // walk all agents
+}
