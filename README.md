@@ -1,1 +1,1 @@
-Collection of scenes, assets, and scripts for UnityEngine that I made for the purposes of either learning more about the engine, testing features, or experimenting with code. Feel free to cut and paste snippets or use assets from this repository for your own reference. 
+Collection of scenes, assets, and scripts for UnityEngine that I made for the purposes of either learning more about the engine, visualizing algorithms/data, or experimenting with graphics. Feel free to cut and paste snippets or use assets from this repository for your own reference. 
