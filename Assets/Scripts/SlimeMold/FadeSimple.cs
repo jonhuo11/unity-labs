@@ -83,7 +83,8 @@ public class FadeSimple : MonoBehaviour
         lastStep += Time.deltaTime;
         if (lastStep >= fstep)
         {
-            lastStep = 0;
+            
+            lastStep = 0f;
             DoStep();
         }
     }

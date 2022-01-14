@@ -1,0 +1,50 @@
+#pragma kernel CSMain
+
+struct Ball
+{
+    float2 pos;
+    float angle;
+};
+
+float bounds;
+float time;
+RWStructuredBuffer<Ball> balls;
+
+uint hash(uint state)
+{
+    state ^= 2747636419u;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    return state;
+}
+
+[numthreads(8,1,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    Ball a = balls[id.x];
+    
+    // calculate next tile
+    float2 newPos = a.pos;
+    newPos.x += 1 * cos(a.angle);
+    newPos.y += 1 * sin(a.angle);
+
+    // are we in bounds
+    if ((newPos.x < 0 || newPos.x > bounds) || (newPos.y < 0 || newPos.y > bounds))
+    {
+        // bounce random
+        /* This code is not working lol
+        uint rand = hash(a.pos.y * bounds + a.pos.x + hash(id.x + time * 100000)) / 4294967295.0; // random from 0 to 1
+        float newAngle = rand * 3.1415 * 2;
+        
+        newPos.x = min(bounds-1, max(0, newPos.x)); // clamp to edge
+		newPos.y = min(bounds-1, max(0, newPos.y));
+        a.angle = newAngle;*/
+        a.angle += 3.1415;
+    }
+
+    a.pos = newPos;
+    balls[id.x] = a;
+}

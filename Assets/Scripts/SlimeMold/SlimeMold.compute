@@ -1,14 +1,92 @@
-// Each #kernel tells which function to compile; you can have many kernels
-#pragma kernel CSMain
+/*
 
-// Create a RenderTexture with enableRandomWrite flag and set it
-// with cs.SetTexture
-RWTexture2D<float4> Result;
+    My take on a slime mold sim
+    inspired by Seb Lague
+
+*/
+
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel InitSim
+#pragma kernel Walk
+#pragma kernel Draw
+
+struct Agent 
+{
+    float2 pos;
+    float angle;
+};
+
+int dim;
+float time;
+float step;
+float decayRate;
+RWStructuredBuffer<Agent> agents;
+RWTexture2D<float4> map;
+
+// Hash function www.cs.ubc.ca/~rbridson/docs/schechter-sca08-turbulence.pdf
+uint hash(uint state)
+{
+    state ^= 2747636419u;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    return state;
+}
+
+float Decay (float4 tile)
+{
+    float o = tile.x;
+    if (o > 0)
+    {
+        o -= decayRate;
+    }
+    if (o < 0)
+    {
+        o = 0.0;
+    }
+    return float4(o,o,o,1);
+}
 
 [numthreads(8,8,1)]
-void CSMain (uint3 id : SV_DispatchThreadID)
+void InitSim(uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
+    map[id.xy] = float4(0,0,0,1); // set black map
+}
 
-    Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+[numthreads(1,1,1)]
+void Walk(uint3 id : SV_DispatchThreadID)
+{
+    Agent a = agents[id.x];
+    
+    // calculate next tile
+    float2 newPos = a.pos;
+    newPos.x += step * cos(a.angle);
+    newPos.y += step * sin(a.angle);
+
+    // are we in bounds
+    if ((newPos.x < 0 || newPos.x > dim) || (newPos.y < 0 || newPos.y > dim))
+    {
+        // bounce random
+        uint rand = hash(id.x * hash(dim * time)) / 4294967295.0; // random from 0 to 1
+        float newAngle = rand * 3.1415 * 2;
+        
+        newPos.x = min(dim-1, max(0, newPos.x)); // clamp to edge
+		newPos.y = min(dim-1, max(0, newPos.y));
+        a.angle = newAngle;
+    }
+
+    a.pos = newPos;
+    agents[id.x] = a;
+
+    // leave imprint on trailmap
+    map[floor(a.pos)] = float4(1,1,1,1); // set to white tile
+}
+
+[numthreads(8,8,1)]
+void Draw (uint3 id : SV_DispatchThreadID)
+{
+    // fade the map
+    map[id.xy] = Decay(map[id.xy]);
 }
